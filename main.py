@@ -1,6 +1,7 @@
 import pygame
-
 import pong
+import pacman
+import space_invaders
 
 pygame.init()
 
@@ -29,6 +30,7 @@ def draw_button(win, text, y_pos):
     win.blit(text_on_display, text_rect)
     return text_rect
 
+
 def gamemode_menu(chosen_game):
     run = True
 
@@ -40,11 +42,11 @@ def gamemode_menu(chosen_game):
 
         singleplayer_rect = draw_button(WIN, 'SINGLEPLAYER', 2)
         if singleplayer_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>SINGLEPLAYER<',  2)
+            draw_button(WIN, '>SINGLEPLAYER<', 2)
 
-        multiplayer_rect = draw_button(WIN, 'MULTIPLAYER',  3)
+        multiplayer_rect = draw_button(WIN, 'MULTIPLAYER', 3)
         if multiplayer_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>MULTIPLAYER<',  3)
+            draw_button(WIN, '>MULTIPLAYER<', 3)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -52,9 +54,9 @@ def gamemode_menu(chosen_game):
                 break
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if singleplayer_rect.collidepoint(mouse_pos):
-                    pong.gameloop(WIN)
+                    pong.gameloop(WIN, False)
                 if multiplayer_rect.collidepoint(mouse_pos):
-                    pong.gameloop(WIN)
+                    pong.gameloop(WIN, True)
 
         pygame.display.update()
 
@@ -69,17 +71,17 @@ def main():
 
         mouse_pos = pygame.mouse.get_pos()
 
-        pacman_rect = draw_button(WIN, 'PACMAN',  2)
+        pacman_rect = draw_button(WIN, 'PACMAN', 2)
         if pacman_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>PACMAN<',  2)
+            draw_button(WIN, '>PACMAN<', 2)
 
-        pong_rect = draw_button(WIN, 'PONG',  3)
+        pong_rect = draw_button(WIN, 'PONG', 3)
         if pong_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>PONG<',  3)
+            draw_button(WIN, '>PONG<', 3)
 
-        space_rect = draw_button(WIN, 'SPACE INVADERS',  4)
+        space_rect = draw_button(WIN, 'SPACE INVADERS', 4)
         if space_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>SPACE INVADERS<',  4)
+            draw_button(WIN, '>SPACE INVADERS<', 4)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
