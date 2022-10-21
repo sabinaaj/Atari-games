@@ -6,7 +6,7 @@ WIDTH, HEIGHT = 1400, 1000
 P_WIDTH, P_HEIGHT = 40, 250
 P_SPEED = 5
 B_RADIUS = 14
-B_SPEED = 9
+B_SPEED = 7
 MAX_SCORE = 10
 FPS = 60
 WHITE = (255, 255, 255)
@@ -22,10 +22,31 @@ class Paddle:
         pygame.draw.rect(win, WHITE, (self.x, self.y, P_WIDTH, P_HEIGHT))
 
     def move(self, up):
-        if up:
+        if up and self.y >= 0:
             self.y -= P_SPEED
-        else:
+        elif not up and self.y + P_HEIGHT <= HEIGHT:
             self.y += P_SPEED
+
+    def ai_move(self, ball):
+        y_middle = self.y + P_HEIGHT // 2
+
+        # ball is under the paddle
+        if ball.y > self.y + P_HEIGHT:
+            self.move(False)
+        # ball is above the paddle
+        elif ball.y < self.y:
+            self.move(True)
+        elif self.y + 10 < ball.y <= y_middle:
+            self.move(True)
+        elif P_HEIGHT + 10 < ball.y < y_middle:
+            self.move(False)
+
+    def ball_collision(self, ball):
+        ball.x_speed *= -1
+        y_middle = self.y + P_HEIGHT // 2
+        difference_in_y = y_middle - ball.y
+        y_speed = difference_in_y // ((P_HEIGHT // 2) // B_SPEED)
+        ball.y_speed = -1 * y_speed
 
 
 class Ball:
@@ -58,40 +79,32 @@ def draw(win, r_paddle, l_paddle, ball, r_score, l_score):
     pygame.display.update()
 
 
-
-def paddle_movement(keys, r_paddle, l_paddle):
-    if keys[pygame.K_w] and l_paddle.y >= 0:
+def paddle_movement(keys, r_paddle, l_paddle, multiplayer):
+    if keys[pygame.K_w]:
         l_paddle.move(True)
-    if keys[pygame.K_s] and l_paddle.y + P_HEIGHT <= HEIGHT:
+    if keys[pygame.K_s]:
         l_paddle.move(False)
-    if keys[pygame.K_UP] and r_paddle.y >= 0:
+    if keys[pygame.K_UP] and not multiplayer:
         r_paddle.move(True)
-    if keys[pygame.K_DOWN] and r_paddle.y + P_HEIGHT <= HEIGHT:
+    if keys[pygame.K_DOWN] and not multiplayer:
         r_paddle.move(False)
 
 
 def ball_movement(ball, r_paddle, l_paddle):
-    if ball.y - B_RADIUS <= 0 or ball.y + 5 +B_RADIUS >= HEIGHT:
+    if ball.y - B_RADIUS <= 0 or ball.y + 5 + B_RADIUS >= HEIGHT:
         ball.y_speed *= -1
 
     if ball.x_speed < 0:
         if l_paddle.y <= ball.y <= l_paddle.y + P_HEIGHT:  # if paddle touches the ball
             if ball.x - B_RADIUS <= l_paddle.x + P_WIDTH:
-                ball_paddle_collision(ball, l_paddle)
+                l_paddle.ball_collision(ball)
     else:
         if r_paddle.y <= ball.y <= r_paddle.y + P_HEIGHT:
             if ball.x + B_RADIUS >= r_paddle.x:
-                ball_paddle_collision(ball, r_paddle)
+                r_paddle.ball_collision(ball)
 
     ball.move()
 
-
-def ball_paddle_collision(ball, paddle):
-    ball.x_speed *= -1
-    y_middle = paddle.y + P_HEIGHT // 2
-    difference_in_y = y_middle - ball.y
-    y_speed = difference_in_y // ((P_HEIGHT // 2) // B_SPEED)
-    ball.y_speed = -1 * y_speed
 
 
 def reset(ball, r_paddle, l_paddle):
@@ -100,12 +113,14 @@ def reset(ball, r_paddle, l_paddle):
     ball.x, ball.y = WIDTH // 2, HEIGHT // 2
     ball.x_speed, ball.y_speed = choice([-B_SPEED, B_SPEED]), choice([-B_SPEED, 0, B_SPEED])
 
+
 def draw_score(win, x, score):
     font = pygame.font.Font(None, 150)
     text_on_display = font.render(str(score), True, WHITE)
     text_rect = text_on_display.get_rect()
     text_rect.center = (x, 50)
     win.blit(text_on_display, text_rect)
+
 
 def gameloop(win, multiplayer):
     run = True
@@ -119,8 +134,11 @@ def gameloop(win, multiplayer):
         draw(win, r_paddle, l_paddle, ball, r_score, l_score)
 
         keys = pygame.key.get_pressed()
-        paddle_movement(keys, r_paddle, l_paddle)
+        paddle_movement(keys, r_paddle, l_paddle, multiplayer)
         ball_movement(ball, r_paddle, l_paddle)
+        if multiplayer:
+            r_paddle.ai_move(ball)
+            l_paddle.ai_move(ball)
 
         if ball.x <= 0:
             reset(ball, r_paddle, l_paddle)
