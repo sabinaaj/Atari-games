@@ -1,7 +1,6 @@
 import pygame
+
 import pong
-import pacman
-import space_invaders
 
 pygame.init()
 
@@ -14,9 +13,9 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 
-def draw_heading(win):
+def draw_heading(win, text):
     font = pygame.font.Font(None, 150)
-    text_on_display = font.render('ATARI GAMES', True, WHITE)
+    text_on_display = font.render(text, True, WHITE)
     text_rect = text_on_display.get_rect()
     text_rect.center = (WIDTH / 2, HEIGHT / 5)
     win.blit(text_on_display, text_rect)
@@ -31,43 +30,13 @@ def draw_button(win, text, y_pos):
     return text_rect
 
 
-def gamemode_menu(chosen_game):
-    run = True
-
-    while run:
-        pygame.time.Clock().tick(FPS)
-        WIN.fill(BLACK)
-
-        mouse_pos = pygame.mouse.get_pos()
-
-        singleplayer_rect = draw_button(WIN, 'SINGLEPLAYER', 2)
-        if singleplayer_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>SINGLEPLAYER<', 2)
-
-        multiplayer_rect = draw_button(WIN, 'MULTIPLAYER', 3)
-        if multiplayer_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>MULTIPLAYER<', 3)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                break
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if singleplayer_rect.collidepoint(mouse_pos):
-                    pong.gameloop(WIN, False)
-                if multiplayer_rect.collidepoint(mouse_pos):
-                    pong.gameloop(WIN, True)
-
-        pygame.display.update()
-
-
 def main():
     run = True
 
     while run:
         pygame.time.Clock().tick(FPS)
         WIN.fill((0, 0, 0))
-        draw_heading(WIN)
+        draw_heading(WIN, 'ATARI GAMES')
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -83,19 +52,86 @@ def main():
         if space_rect.collidepoint(mouse_pos):
             draw_button(WIN, '>SPACE INVADERS<', 4)
 
+        pygame.display.update()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pacman_rect.collidepoint(mouse_pos):
-                    gamemode_menu(1)
+                    run = False
                 if pong_rect.collidepoint(mouse_pos):
-                    gamemode_menu(2)
+                    run = False
+                    gamemode_menu()
                 if space_rect.collidepoint(mouse_pos):
-                    gamemode_menu(3)
+                    run = False
+
+
+def gamemode_menu():
+    run = True
+
+    while run:
+        pygame.time.Clock().tick(FPS)
+        WIN.fill(BLACK)
+        draw_heading(WIN, 'PONG')
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        singleplayer_rect = draw_button(WIN, 'SINGLEPLAYER', 2)
+        if singleplayer_rect.collidepoint(mouse_pos):
+            draw_button(WIN, '>SINGLEPLAYER<', 2)
+
+        multiplayer_rect = draw_button(WIN, 'MULTIPLAYER', 3)
+        if multiplayer_rect.collidepoint(mouse_pos):
+            draw_button(WIN, '>MULTIPLAYER<', 3)
+
+        back_rect = draw_button(WIN, 'BACK', 4)
+        if back_rect.collidepoint(mouse_pos):
+            draw_button(WIN, '>BACK<', 4)
 
         pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if singleplayer_rect.collidepoint(mouse_pos):
+                    run = False
+                    pong.gameloop(WIN, False)
+                if multiplayer_rect.collidepoint(mouse_pos):
+                    run = False
+                    pong.gameloop(WIN, True)
+                if back_rect.collidepoint(mouse_pos):
+                    run = False
+                    main()
+
+def end_screen(text):
+    run = True
+
+    while run:
+        pygame.time.Clock().tick(FPS)
+        WIN.fill((0, 0, 0))
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        draw_button(WIN, text, 2)
+
+        back_rect = draw_button(WIN, 'BACK TO MENU', 3)
+        if back_rect.collidepoint(mouse_pos):
+            draw_button(WIN, '>BACK TO MENU<', 3)
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if back_rect.collidepoint(mouse_pos):
+                    run = False
+                    main()
 
 
 if __name__ == '__main__':
