@@ -1,6 +1,7 @@
 import pygame
 
 import pong
+import space_invaders
 
 pygame.init()
 
@@ -10,11 +11,11 @@ pygame.display.set_caption('Atari games')
 
 FPS = 60
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+DARK_GRAY = (18, 18, 18)
 
 
 def draw_heading(win, text):
-    font = pygame.font.Font(None, 150)
+    font = pygame.font.Font('assets/font/retro_game.ttf', 125)
     text_on_display = font.render(text, True, WHITE)
     text_rect = text_on_display.get_rect()
     text_rect.center = (WIDTH / 2, HEIGHT / 5)
@@ -22,7 +23,7 @@ def draw_heading(win, text):
 
 
 def draw_button(win, text, y_pos):
-    font = pygame.font.Font(None, 75)
+    font = pygame.font.Font('assets/font/retro_game.ttf', 60)
     text_on_display = font.render(text, True, WHITE)
     text_rect = text_on_display.get_rect()
     text_rect.center = (WIDTH / 2, HEIGHT / 5 * y_pos)
@@ -35,7 +36,7 @@ def main():
 
     while run:
         pygame.time.Clock().tick(FPS)
-        WIN.fill((0, 0, 0))
+        WIN.fill(DARK_GRAY)
         draw_heading(WIN, 'ATARI GAMES')
 
         mouse_pos = pygame.mouse.get_pos()
@@ -66,6 +67,7 @@ def main():
                     gamemode_menu()
                 if space_rect.collidepoint(mouse_pos):
                     run = False
+                    space_invaders.gameloop(WIN)
 
 
 def gamemode_menu():
@@ -73,7 +75,7 @@ def gamemode_menu():
 
     while run:
         pygame.time.Clock().tick(FPS)
-        WIN.fill(BLACK)
+        WIN.fill(DARK_GRAY)
         draw_heading(WIN, 'PONG')
 
         mouse_pos = pygame.mouse.get_pos()
@@ -106,6 +108,7 @@ def gamemode_menu():
                 if back_rect.collidepoint(mouse_pos):
                     run = False
                     main()
+
 
 def end_screen(text):
     run = True

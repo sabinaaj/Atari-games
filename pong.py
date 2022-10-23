@@ -12,7 +12,8 @@ B_SPEED = 8
 MAX_SCORE = 10
 FPS = 60
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+DARK_GRAY = (18, 18, 18)
+
 
 class Paddle:
     def __init__(self, x, y):
@@ -40,10 +41,10 @@ class Paddle:
         elif ball.y < self.y:
             self.move(True)
         # ball is in 2/4 of the paddle
-        elif self.y + P_HEIGHT//4 * 2 < ball.y <= y_middle:
+        elif self.y + P_HEIGHT // 4 * 2 < ball.y <= y_middle:
             self.move(True)
         # ball is in 3/4 of the paddle
-        elif P_HEIGHT + P_HEIGHT//4 * 3 < ball.y < y_middle:
+        elif P_HEIGHT + P_HEIGHT // 4 * 3 < ball.y < y_middle:
             self.move(False)
 
     # Handle ball and paddle collision
@@ -70,104 +71,111 @@ class Ball:
         self.y += self.y_speed
 
 
-def draw(win, r_paddle, l_paddle, ball, r_score, l_score):
-    win.fill(BLACK)
-    r_paddle.draw(win)
-    l_paddle.draw(win)
-    ball.draw(win)
-    draw_score(win, WIDTH // 2 - 50, l_score)
-    draw_score(win, WIDTH // 2 + 50, r_score)
+class Game:
+    def __init__(self):
+        self.l_paddle = Paddle(40, HEIGHT // 2 - P_HEIGHT // 2)
+        self.r_paddle = Paddle(WIDTH - P_WIDTH - 40, HEIGHT // 2 - P_HEIGHT // 2)
+        self.ball = Ball(WIDTH // 2, HEIGHT // 2, choice([-B_SPEED, B_SPEED]), choice([-B_SPEED, 0, B_SPEED]))
+        self.l_score = self.r_score = 0
 
-    # Draws divider in the middle
-    for idx in range(40):
-        if idx % 2 == 1:
-            pygame.draw.rect(win, WHITE, (WIDTH // 2 - 5, HEIGHT // 40 * idx - HEIGHT // 80, 10, HEIGHT // 40))
+    def draw(self, win):
+        win.fill(DARK_GRAY)
+        self.r_paddle.draw(win)
+        self.l_paddle.draw(win)
+        self.ball.draw(win)
+        draw_score(win, WIDTH // 2 - 75, self.l_score)
+        draw_score(win, WIDTH // 2 + 75, self.r_score)
 
-    pygame.display.update()
+        # Draws divider in the middle
+        for idx in range(40):
+            if idx % 2 == 1:
+                pygame.draw.rect(win, WHITE, (WIDTH // 2 - 5, HEIGHT // 40 * idx - HEIGHT // 80, 10, HEIGHT // 40))
 
+        pygame.display.update()
 
-# Checks what keys are pressed and move paddles
-def paddle_movement(keys, r_paddle, l_paddle, multiplayer):
-    if keys[pygame.K_w]:
-        l_paddle.move(True)
-    if keys[pygame.K_s]:
-        l_paddle.move(False)
-    if keys[pygame.K_UP] and multiplayer:
-        r_paddle.move(True)
-    if keys[pygame.K_DOWN] and multiplayer:
-        r_paddle.move(False)
+    # Checks what keys are pressed and move paddles
+    def paddle_movement(self, keys, multiplayer):
+        if keys[pygame.K_w]:
+            self.l_paddle.move(True)
+        if keys[pygame.K_s]:
+            self.l_paddle.move(False)
+        if keys[pygame.K_UP] and multiplayer:
+            self.r_paddle.move(True)
+        if keys[pygame.K_DOWN] and multiplayer:
+            self.r_paddle.move(False)
 
+        if not multiplayer:
+            self.r_paddle.ai_move(self.ball)
 
-def ball_movement(ball, r_paddle, l_paddle):
-    if ball.y - B_RADIUS <= 0 or ball.y + 5 + B_RADIUS >= HEIGHT:
-        ball.y_speed *= -1
+    def ball_movement(self):
+        if self.ball.y - B_RADIUS <= 0 or self.ball.y + 7 + B_RADIUS >= HEIGHT:
+            self.ball.y_speed *= -1
 
-    if ball.x_speed < 0:
-        if l_paddle.y <= ball.y <= l_paddle.y + P_HEIGHT:  # if paddle touches the ball
-            if ball.x - B_RADIUS <= l_paddle.x + P_WIDTH:
-                l_paddle.ball_collision(ball)
-    else:
-        if r_paddle.y <= ball.y <= r_paddle.y + P_HEIGHT:
-            if ball.x + B_RADIUS >= r_paddle.x:
-                r_paddle.ball_collision(ball)
+        if self.ball.x_speed < 0:
+            if self.l_paddle.y <= self.ball.y <= self.l_paddle.y + P_HEIGHT:  # if paddle touches the self.ball
+                if self.ball.x - B_RADIUS <= self.l_paddle.x + P_WIDTH:
+                    self.l_paddle.ball_collision(self.ball)
+        else:
+            if self.r_paddle.y <= self.ball.y <= self.r_paddle.y + P_HEIGHT:
+                if self.ball.x + B_RADIUS >= self.r_paddle.x:
+                    self.r_paddle.ball_collision(self.ball)
 
-    ball.move()
+        self.ball.move()
 
+    # Changes coordinates and ball speed to default values
+    def reset(self):
+        self.l_paddle.x, self.l_paddle.y = 40, HEIGHT // 2 - P_HEIGHT // 2
+        self.r_paddle.x, self.r_paddle.y = WIDTH - P_WIDTH - 40, HEIGHT // 2 - P_HEIGHT // 2
+        self.ball.x, self.ball.y = WIDTH // 2, HEIGHT // 2
+        self.ball.x_speed, self.ball.y_speed = choice([-B_SPEED, B_SPEED]), choice([-B_SPEED, 0, B_SPEED])
 
-# Changes coordinates and ball speed to default values
-def reset(ball, r_paddle, l_paddle):
-    l_paddle.x, l_paddle.y = 40, HEIGHT // 2 - P_HEIGHT // 2
-    r_paddle.x, r_paddle.y = WIDTH - P_WIDTH - 40, HEIGHT // 2 - P_HEIGHT // 2
-    ball.x, ball.y = WIDTH // 2, HEIGHT // 2
-    ball.x_speed, ball.y_speed = choice([-B_SPEED, B_SPEED]), choice([-B_SPEED, 0, B_SPEED])
+    def score_handler(self, multiplayer):
+        if self.ball.x <= 0:
+            self.reset()
+            self.r_score += 1
+        if self.ball.x >= WIDTH:
+            self.reset()
+            self.l_score += 1
+
+        if self.l_score >= MAX_SCORE:
+            if multiplayer:
+                main.end_screen('LEFT PLAYER WON')
+            else:
+                main.end_screen('YOU WON')
+            return False
+
+        if self.r_score >= MAX_SCORE:
+            if multiplayer:
+                main.end_screen('RIGHT PLAYER WON')
+            else:
+                main.end_screen('YOU LOST')
+            return False
+        return True
 
 
 # Draws score on display
 def draw_score(win, x, score):
-    font = pygame.font.Font(None, 150)
+    font = pygame.font.Font('assets/font/retro_game.ttf', 100)
     text_on_display = font.render(str(score), True, WHITE)
     text_rect = text_on_display.get_rect()
     text_rect.center = (x, 50)
     win.blit(text_on_display, text_rect)
 
+
 # Initializes paddles and ball and handle gameloop
 def gameloop(win, multiplayer):
     run = True
-    l_paddle = Paddle(40, HEIGHT // 2 - P_HEIGHT // 2)
-    r_paddle = Paddle(WIDTH - P_WIDTH - 40, HEIGHT // 2 - P_HEIGHT // 2)
-    ball = Ball(WIDTH // 2, HEIGHT // 2, choice([-B_SPEED, B_SPEED]), choice([-B_SPEED, 0, B_SPEED]))
-    l_score, r_score = 0, 0
+    game = Game()
 
     while run:
         pygame.time.Clock().tick(FPS)
-        draw(win, r_paddle, l_paddle, ball, r_score, l_score)
+        game.draw(win)
 
         keys = pygame.key.get_pressed()
-        paddle_movement(keys, r_paddle, l_paddle, multiplayer)
-        ball_movement(ball, r_paddle, l_paddle)
-        if not multiplayer:
-            r_paddle.ai_move(ball)
-
-        if ball.x <= 0:
-            reset(ball, r_paddle, l_paddle)
-            r_score += 1
-        if ball.x >= WIDTH:
-            reset(ball, r_paddle, l_paddle)
-            l_score += 1
-
-        if l_score > MAX_SCORE:
-            run = False
-            if multiplayer:
-                main.end_screen('LEFT PLAYER WON')
-            else:
-                main.end_screen('YOU WON')
-
-        if r_score > MAX_SCORE:
-            run = False
-            if multiplayer:
-                main.end_screen('RIGHT PLAYER WON')
-            else:
-                main.end_screen('YOU LOST')
+        game.paddle_movement(keys, multiplayer)
+        game.ball_movement()
+        if not game.score_handler(multiplayer):
+            break
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
