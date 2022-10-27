@@ -2,6 +2,8 @@ import os
 
 import pygame
 
+import main
+
 WIDTH, HEIGHT = 1400, 1000
 FPS = 60
 WHITE = (255, 255, 255)
@@ -20,7 +22,7 @@ INVADER3 = pygame.transform.scale(pygame.image.load(os.path.join("assets/space_i
 class Player:
     def __init__(self, x):
         self.x = x
-        self.y = HEIGHT - P_HEIGHT - 10
+        self.y = HEIGHT - P_HEIGHT - 20
         self.shots = 1
         self.lives = 3
         self.image = PLAYER_ICON
@@ -29,10 +31,10 @@ class Player:
         win.blit(self.image, (self.x, self.y))
 
     def move(self, left):
-        # paddle go up
+        # player go left
         if left and self.x >= 0:
             self.x -= P_SPEED
-        # paddle go down
+        # player go right
         elif not left and self.x + P_WIDTH <= WIDTH:
             self.x += P_SPEED
 
@@ -49,7 +51,6 @@ class Invader:
         win.blit(self.image, (self.x, self.y))
 
 
-
 class Shield:
     def __init__(self):
         pass
@@ -59,22 +60,29 @@ class Game:
     def __init__(self):
         self.player = Player(WIDTH // 2 - P_WIDTH // 2)
         self.invaders = self.invaders_setup(ROWS, COLUMNS)
+        self.score = 0
+
     def draw(self, win):
         win.fill(DARK_GRAY)
-        self.player.draw(win)
+
+        main.draw_text(win, f'SCORE: {self.score}', 150, 40, 40)
+        main.draw_text(win, f'LIVES: {self.player.lives}', WIDTH - 150, 40, 40)
 
         for invader in self.invaders:
             invader.draw(win)
 
+        self.player.draw(win)
 
         pygame.display.update()
 
+    # Handles player movement based on pressed keys
     def player_movement(self, keys):
         if keys[pygame.K_LEFT]:
             self.player.move(True)
         if keys[pygame.K_RIGHT]:
             self.player.move(False)
 
+    # Draws invaders on display in regtangle
     def invaders_setup(self, rows, cols):
         invaders = []
         for row_idx, row in enumerate(range(rows)):
@@ -93,12 +101,7 @@ class Game:
                 invaders.append(invader)
         return invaders
 
-def draw_score(win, x, score):
-    font = pygame.font.Font('assets/font/retro_game.ttf', 100)
-    text_on_display = font.render(str(score), True, WHITE)
-    text_rect = text_on_display.get_rect()
-    text_rect.center = (x, 50)
-    win.blit(text_on_display, text_rect)
+
 def gameloop(win):
     run = True
 

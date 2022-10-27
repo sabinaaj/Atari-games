@@ -83,8 +83,8 @@ class Game:
         self.r_paddle.draw(win)
         self.l_paddle.draw(win)
         self.ball.draw(win)
-        draw_score(win, WIDTH // 2 - 75, self.l_score)
-        draw_score(win, WIDTH // 2 + 75, self.r_score)
+        main.draw_text(win, str(self.l_score), WIDTH // 2 - 75, 50, 100)
+        main.draw_text(win, str(self.r_score), WIDTH // 2 + 75, 50, 100)
 
         # Draws divider in the middle
         for idx in range(40):
@@ -151,15 +151,6 @@ class Game:
                 main.end_screen('YOU LOST')
             return False
         return True
-
-
-# Draws score on display
-def draw_score(win, x, score):
-    font = pygame.font.Font('assets/font/retro_game.ttf', 100)
-    text_on_display = font.render(str(score), True, WHITE)
-    text_rect = text_on_display.get_rect()
-    text_rect.center = (x, 50)
-    win.blit(text_on_display, text_rect)
 
 
 # Initializes paddles and ball and handle gameloop

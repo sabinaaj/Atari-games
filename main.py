@@ -14,44 +14,38 @@ WHITE = (255, 255, 255)
 DARK_GRAY = (18, 18, 18)
 
 
-def draw_heading(win, text):
-    font = pygame.font.Font('assets/font/retro_game.ttf', 125)
+# Draws given text on display
+def draw_text(win, text, x, y, size):
+    font = pygame.font.Font('assets/font/retro_game.ttf', size)
     text_on_display = font.render(text, True, WHITE)
     text_rect = text_on_display.get_rect()
-    text_rect.center = (WIDTH / 2, HEIGHT / 5)
-    win.blit(text_on_display, text_rect)
-
-
-def draw_button(win, text, y_pos):
-    font = pygame.font.Font('assets/font/retro_game.ttf', 60)
-    text_on_display = font.render(text, True, WHITE)
-    text_rect = text_on_display.get_rect()
-    text_rect.center = (WIDTH / 2, HEIGHT / 5 * y_pos)
+    text_rect.center = (x, y)
     win.blit(text_on_display, text_rect)
     return text_rect
 
 
+# Shows first screen of game menu, where you can choose game
 def main():
     run = True
 
     while run:
         pygame.time.Clock().tick(FPS)
         WIN.fill(DARK_GRAY)
-        draw_heading(WIN, 'ATARI GAMES')
+        draw_text(WIN, 'ATARI GAMES', WIDTH / 2, HEIGHT / 5, 125)
 
         mouse_pos = pygame.mouse.get_pos()
 
-        pacman_rect = draw_button(WIN, 'PACMAN', 2)
+        pacman_rect = draw_text(WIN, 'PACMAN', WIDTH / 2, HEIGHT / 5 * 2, 60)
         if pacman_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>PACMAN<', 2)
+            draw_text(WIN, '>PACMAN<', WIDTH / 2, HEIGHT / 5 * 2, 60)
 
-        pong_rect = draw_button(WIN, 'PONG', 3)
+        pong_rect = draw_text(WIN, 'PONG', WIDTH / 2, HEIGHT / 5 * 3, 60)
         if pong_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>PONG<', 3)
+            draw_text(WIN, '>PONG<', WIDTH / 2, HEIGHT / 5 * 3, 60)
 
-        space_rect = draw_button(WIN, 'SPACE INVADERS', 4)
+        space_rect = draw_text(WIN, 'SPACE INVADERS', WIDTH / 2, HEIGHT / 5 * 4, 60)
         if space_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>SPACE INVADERS<', 4)
+            draw_text(WIN, '>SPACE INVADERS<', WIDTH / 2, HEIGHT / 5 * 4, 60)
 
         pygame.display.update()
 
@@ -70,27 +64,28 @@ def main():
                     space_invaders.gameloop(WIN)
 
 
+# Shows screen of menu, where you can choose how many players are playing
 def gamemode_menu():
     run = True
 
     while run:
         pygame.time.Clock().tick(FPS)
         WIN.fill(DARK_GRAY)
-        draw_heading(WIN, 'PONG')
+        draw_text(WIN, 'PONG', WIDTH / 2, HEIGHT / 5, 125)
 
         mouse_pos = pygame.mouse.get_pos()
 
-        singleplayer_rect = draw_button(WIN, 'SINGLEPLAYER', 2)
+        singleplayer_rect = draw_text(WIN, 'SINGLEPLAYER', WIDTH / 2, HEIGHT / 5 * 2, 60)
         if singleplayer_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>SINGLEPLAYER<', 2)
+            draw_text(WIN, '>SINGLEPLAYER<', WIDTH / 2, HEIGHT / 5 * 2, 60)
 
-        multiplayer_rect = draw_button(WIN, 'MULTIPLAYER', 3)
+        multiplayer_rect = draw_text(WIN, 'MULTIPLAYER', WIDTH / 2, HEIGHT / 5 * 3, 60)
         if multiplayer_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>MULTIPLAYER<', 3)
+            draw_text(WIN, '>MULTIPLAYER<', WIDTH / 2, HEIGHT / 5 * 3, 60)
 
-        back_rect = draw_button(WIN, 'BACK', 4)
+        back_rect = draw_text(WIN, 'BACK', WIDTH / 2, HEIGHT / 5 * 4, 60)
         if back_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>BACK<', 4)
+            draw_text(WIN, '>BACK<', WIDTH / 2, HEIGHT / 5 * 4, 60)
 
         pygame.display.update()
 
@@ -110,20 +105,21 @@ def gamemode_menu():
                     main()
 
 
+# Shows screen after game ends
 def end_screen(text):
     run = True
 
     while run:
         pygame.time.Clock().tick(FPS)
-        WIN.fill((0, 0, 0))
+        WIN.fill(DARK_GRAY)
 
         mouse_pos = pygame.mouse.get_pos()
 
-        draw_button(WIN, text, 2)
+        draw_text(WIN, text, WIDTH / 2, HEIGHT / 5 * 2, 60)
 
-        back_rect = draw_button(WIN, 'BACK TO MENU', 3)
+        back_rect = draw_text(WIN, 'BACK TO MENU', WIDTH / 2, HEIGHT / 5 * 3, 60)
         if back_rect.collidepoint(mouse_pos):
-            draw_button(WIN, '>BACK TO MENU<', 3)
+            draw_text(WIN, '>BACK TO MENU<', WIDTH / 2, HEIGHT / 5 * 3, 60)
 
         pygame.display.update()
 
