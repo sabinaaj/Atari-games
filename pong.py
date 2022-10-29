@@ -112,7 +112,7 @@ class Game:
             self.ball.y_speed *= -1
 
         if self.ball.x_speed < 0:
-            if self.l_paddle.y <= self.ball.y <= self.l_paddle.y + P_HEIGHT:  # if paddle touches the self.ball
+            if self.l_paddle.y <= self.ball.y <= self.l_paddle.y + P_HEIGHT:  # if paddle touches the ball
                 if self.ball.x - B_RADIUS <= self.l_paddle.x + P_WIDTH:
                     self.l_paddle.ball_collision(self.ball)
         else:
