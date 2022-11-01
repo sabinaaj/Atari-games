@@ -108,7 +108,7 @@ class Game:
             self.r_paddle.ai_move(self.ball)
 
     def ball_movement(self):
-        if self.ball.y - B_RADIUS <= 0 or self.ball.y + 7 + B_RADIUS >= HEIGHT:
+        if self.ball.y - B_RADIUS <= B_SPEED or self.ball.y + B_RADIUS >= HEIGHT - B_SPEED:
             self.ball.y_speed *= -1
 
         if self.ball.x_speed < 0:

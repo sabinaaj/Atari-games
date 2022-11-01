@@ -1,5 +1,6 @@
 import os
 import random
+
 import pygame
 
 import main
@@ -10,13 +11,16 @@ WHITE = (255, 255, 255)
 DARK_GRAY = (18, 18, 18)
 GREEN = (0, 255, 15)
 
+# player
 P_WIDTH, P_HEIGHT = 100, 60
 P_SPEED = 5
 
-I_WIDTH = I_HEIGHT = 75
-I_SPEED = 3
+# invaders
+I_SIZE = 75
+I_SPEED = 2
 ROWS, COLUMNS = 5, 11
 
+# shield
 S_SIZE = 10
 S_SHAPE = [
     '  xxxxxxx',
@@ -27,20 +31,27 @@ S_SHAPE = [
     'xxx     xxx',
     'xx       xx']
 
+# laser
 L_WIDTH, L_HEIGHT = 5, 15
-L_SPEED = 12
+L_SPEED = 15
 
-X_MARGIN = (WIDTH - 11 * (I_WIDTH + 10)) // 2
+# mystery ship
+M_SIZE = 125
+M_SPEED = 4
+
+X_MARGIN = (WIDTH - 11 * (I_SIZE + 10)) // 2
 SPACE_BETWEEN = (WIDTH - 2 * X_MARGIN - 44 * S_SIZE) // 3
 
 PLAYER_ICON = pygame.transform.scale(
     pygame.image.load(os.path.join("assets/space_invaders", "cannon.png")), (P_WIDTH, P_HEIGHT))
 INVADER1 = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "invader1.ico")), (I_WIDTH, I_HEIGHT))
+    pygame.image.load(os.path.join("assets/space_invaders", "invader1.ico")), (I_SIZE, I_SIZE))
 INVADER2 = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "invader2.ico")), (I_WIDTH, I_HEIGHT))
+    pygame.image.load(os.path.join("assets/space_invaders", "invader2.ico")), (I_SIZE, I_SIZE))
 INVADER3 = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "invader3.ico")), (I_WIDTH, I_HEIGHT))
+    pygame.image.load(os.path.join("assets/space_invaders", "invader3.ico")), (I_SIZE, I_SIZE))
+MYSTERY_SHIP = pygame.transform.scale(
+    pygame.image.load(os.path.join("assets/space_invaders", "mystery_ship.ico")), (M_SIZE, M_SIZE))
 
 
 class Player:
@@ -49,6 +60,7 @@ class Player:
         self.y = HEIGHT - P_HEIGHT - 20
         self.lives = 3
         self.image = PLAYER_ICON
+        self.mask = pygame.mask.from_surface(self.image)
 
     def draw(self, win):
         win.blit(self.image, (self.x, self.y))
@@ -72,6 +84,7 @@ class Invader:
         self.is_live = True
         self.image = image
         self.points = points
+        self.mask = pygame.mask.from_surface(self.image)
 
     def draw(self, win):
         win.blit(self.image, (self.x, self.y))
@@ -80,15 +93,35 @@ class Invader:
         if direction == -1:
             self.x -= I_SPEED
         elif direction == 0:
-            self.y += I_SPEED
+            self.y += 5
         elif direction == 1:
             self.x += I_SPEED
+
+
+class MysteryShip:
+    def __init__(self, direction):
+        # -1 = left, 1 = right
+        self.direction = direction
+        self.x = WIDTH + I_SIZE if direction == -1 else 0 - I_SIZE
+        self.y = 75
+        self.image = MYSTERY_SHIP
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def draw(self, win):
+        win.blit(self.image, (self.x, self.y))
+
+    def move(self):
+        if self.direction == -1:
+            self.x -= M_SPEED
+        else:
+            self.x += M_SPEED
 
 
 class Shield:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.mask = pygame.mask.Mask((S_SIZE, S_SIZE), True)
 
     def draw(self, win):
         pygame.draw.rect(win, GREEN, (self.x, self.y, S_SIZE, S_SIZE))
@@ -100,6 +133,7 @@ class Laser:
         self.y = y
         # if it's player's laser go up is true and if it's invader's laser go down
         self.up = up
+        self.mask = pygame.mask.Mask((L_WIDTH, L_HEIGHT), True)
 
     def draw(self, win):
         pygame.draw.rect(win, WHITE, (self.x, self.y, L_WIDTH, L_HEIGHT))
@@ -120,6 +154,10 @@ class Game:
         # direction, -1 = left, 0 = down, 1 = right
         self.invaders_dir = 1
         self.invaders_lasers = []
+        self.row_counter = 0
+
+        self.mystery_ship = None
+        self.mystery_ship_spawn_time = random.randint(500, 1000)
 
         self.shields = self.shield_setup()
         self.score = 0
@@ -144,6 +182,9 @@ class Game:
         if self.player_laser is not None:
             self.player_laser.draw(win)
 
+        if self.mystery_ship is not None:
+            self.mystery_ship.draw(win)
+
         self.player.draw(win)
 
         pygame.display.update()
@@ -152,9 +193,9 @@ class Game:
     def player_movement(self, keys):
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.player.move(True)
-        if keys[pygame.K_RIGHT]  or keys[pygame.K_d]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.player.move(False)
-        if keys[pygame.K_UP]  or keys[pygame.K_w]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             if self.player_laser is None:
                 self.player_laser = self.player.shoot_laser()
 
@@ -164,14 +205,35 @@ class Game:
             if self.player_laser.y < 0:
                 self.player_laser = None
 
+    def player_laser_collision(self):
+        hit = False
+        if self.player_laser is not None:
+            for shield in self.shields:
+                if collide(self.player_laser, shield):
+                    self.shields.remove(shield)
+                    hit = True
+                    break
+            for invader in self.invaders:
+                if collide(self.player_laser, invader):
+                    self.invaders.remove(invader)
+                    hit = True
+                    break
+            if self.mystery_ship is not None:
+                if collide(self.player_laser, self.mystery_ship):
+                    self.mystery_ship = None
+                    hit = True
+
+            if hit:
+                self.player_laser = None
+
     # Draws invaders on display in rectangle
     def invaders_setup(self, rows, cols):
         invaders = []
         for row_idx, row in enumerate(range(rows)):
             for col_idx, col in enumerate(range(cols)):
                 # calculate x of every invader, so they are in the middle
-                x = X_MARGIN + col_idx * (I_WIDTH + 10)
-                y = 100 + row_idx * (I_HEIGHT + 5)
+                x = X_MARGIN + col_idx * (I_SIZE + 10)
+                y = 200 + row_idx * (I_SIZE + 5)
 
                 if row == 0:
                     invader = Invader(x, y, INVADER3, 30)
@@ -183,25 +245,55 @@ class Game:
                 invaders.append(invader)
         return invaders
 
-    def invaders_movement(self):
+    def invader_laser_collision(self):
+        for laser in self.invaders_lasers:
+            for shield in self.shields:
+                if collide(laser, shield):
+                    self.shields.remove(shield)
+                    self.invaders_lasers.remove(laser)
+                    break
+            if collide(laser, self.player):
+                self.player.lives -= 1
+                self.invaders_lasers.remove(laser)
+                break
 
+
+
+    def invaders_movement(self):
+        touch_side = False
         for invader in self.invaders:
-            if invader.x >= WIDTH - I_WIDTH:
+            if invader.x >= WIDTH - I_SIZE and not touch_side:
+                touch_side = True
                 self.invaders_go_down()
                 self.invaders_dir = -1
-            elif invader.x <= 0:
+
+            elif invader.x <= 0 and not touch_side:
+                touch_side = True
                 self.invaders_go_down()
                 self.invaders_dir = 1
 
     def invaders_go_down(self):
+        self.row_counter += 1
         for invader in self.invaders:
             invader.move(0)
 
     def invader_shoot(self):
         invader = random.choice(self.invaders)
-        laser = Laser(invader.x - I_WIDTH//2, invader.y, False)
+        laser = Laser(invader.x - I_SIZE // 2, invader.y, False)
         self.invaders_lasers.append(laser)
 
+    def mystery_ship_handler(self):
+        self.mystery_ship_spawn_time -= 1
+        if self.mystery_ship_spawn_time <= 0:
+            self.mystery_ship = MysteryShip(random.choice([-1, 1]))
+            self.mystery_ship_spawn_time = random.randint(500, 1000)
+
+        if self.mystery_ship is not None:
+            self.mystery_ship.move()
+            if self.mystery_ship.direction == -1 and self.mystery_ship.x + I_SIZE < 0:
+                self.mystery_ship = None
+            elif self.mystery_ship.direction == 1 and self.mystery_ship.x > WIDTH:
+                self.mystery_ship = None
 
     def shield_setup(self):
         shields = []
@@ -217,14 +309,19 @@ class Game:
         return shields
 
 
+def collide(obj1, obj2):
+    offset_x = obj2.x - obj1.x
+    offset_y = obj2.y - obj1.y
+    return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) is not None
+
+
 def gameloop(win):
     run = True
 
     game = Game()
 
     invader_shoot = pygame.USEREVENT
-    pygame.time.set_timer(invader_shoot, 1000)
-
+    pygame.time.set_timer(invader_shoot, 750)
 
     while run:
         pygame.time.Clock().tick(FPS)
@@ -232,10 +329,16 @@ def gameloop(win):
         keys = pygame.key.get_pressed()
         game.player_movement(keys)
         game.player_shoot()
+        game.player_laser_collision()
 
         game.invaders_movement()
+        game.invader_laser_collision()
+        game.mystery_ship_handler()
 
         game.draw(win)
+
+        # if game.row_counter > 11:
+        #     run = False
 
         for event in pygame.event.get():
             if event.type == invader_shoot:
