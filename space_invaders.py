@@ -1,5 +1,6 @@
 import os
 import random
+from time import sleep
 
 import pygame
 
@@ -17,7 +18,7 @@ P_SPEED = 5
 
 # invaders
 I_SIZE = 75
-I_SPEED = 2
+I_SPEED = 10
 ROWS, COLUMNS = 5, 11
 
 # shield
@@ -43,15 +44,22 @@ X_MARGIN = (WIDTH - 11 * (I_SIZE + 10)) // 2
 SPACE_BETWEEN = (WIDTH - 2 * X_MARGIN - 44 * S_SIZE) // 3
 
 PLAYER_ICON = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "cannon.png")), (P_WIDTH, P_HEIGHT))
-INVADER1 = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "invader1.ico")), (I_SIZE, I_SIZE))
-INVADER2 = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "invader2.ico")), (I_SIZE, I_SIZE))
-INVADER3 = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "invader3.ico")), (I_SIZE, I_SIZE))
+    pygame.image.load(os.path.join('assets/space_invaders', 'cannon.png')), (P_WIDTH, P_HEIGHT))
+INVADER1a = pygame.transform.scale(
+    pygame.image.load(os.path.join('assets/space_invaders', 'invader1a.png')), (I_SIZE, I_SIZE))
+INVADER2a = pygame.transform.scale(
+    pygame.image.load(os.path.join('assets/space_invaders', 'invader2a.png')), (I_SIZE, I_SIZE))
+INVADER3a= pygame.transform.scale(
+    pygame.image.load(os.path.join('assets/space_invaders', 'invader3a.png')), (I_SIZE, I_SIZE))
+INVADER1b = pygame.transform.scale(
+    pygame.image.load(os.path.join('assets/space_invaders', 'invader1b.png')), (I_SIZE, I_SIZE))
+INVADER2b = pygame.transform.scale(
+    pygame.image.load(os.path.join('assets/space_invaders', 'invader2b.png')), (I_SIZE, I_SIZE))
+INVADER3b= pygame.transform.scale(
+    pygame.image.load(os.path.join('assets/space_invaders', 'invader3b.png')), (I_SIZE, I_SIZE))
 MYSTERY_SHIP = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets/space_invaders", "mystery_ship.ico")), (M_SIZE, M_SIZE))
+    pygame.image.load(os.path.join('assets/space_invaders', 'mystery_ship.ico')), (M_SIZE, M_SIZE))
+
 
 
 class Player:
@@ -78,22 +86,32 @@ class Player:
 
 
 class Invader:
-    def __init__(self, x, y, image, points):
+    INVADERS = [
+        (INVADER1a, INVADER1b, 10),
+        (INVADER2a, INVADER2b, 20),
+        (INVADER3a, INVADER3b, 30),
+        ]
+
+    def __init__(self, x, y, typ):
         self.x = x
         self.y = y
         self.is_live = True
-        self.image = image
-        self.points = points
-        self.mask = pygame.mask.from_surface(self.image)
+        self.image1, self.image2, self.points = self.INVADERS[typ - 1]
+        self.change_image = False
+        self.mask = pygame.mask.from_surface(self.image1)
 
     def draw(self, win):
-        win.blit(self.image, (self.x, self.y))
+        if self.change_image:
+            win.blit(self.image1, (self.x, self.y))
+        else:
+            win.blit(self.image2, (self.x, self.y))
 
     def move(self, direction):
+        self.change_image = not self.change_image
         if direction == -1:
             self.x -= I_SPEED
         elif direction == 0:
-            self.y += 5
+            self.y += I_SPEED
         elif direction == 1:
             self.x += I_SPEED
 
@@ -168,13 +186,12 @@ class Game:
         main.draw_text(win, f'SCORE: {self.score}', 150, 40, 40)
         main.draw_text(win, f'LIVES: {self.player.lives}', WIDTH - 150, 40, 40)
 
-        for invader in self.invaders:
-            invader.move(self.invaders_dir)
-            invader.draw(win)
-
         for invader_laser in self.invaders_lasers:
             invader_laser.move()
             invader_laser.draw(win)
+
+        for invader in self.invaders:
+            invader.draw(win)
 
         for shield in self.shields:
             shield.draw(win)
@@ -236,11 +253,11 @@ class Game:
                 y = 200 + row_idx * (I_SIZE + 5)
 
                 if row == 0:
-                    invader = Invader(x, y, INVADER3, 30)
+                    invader = Invader(x, y, 1)
                 elif row == 1 or row == 2:
-                    invader = Invader(x, y, INVADER2, 20)
+                    invader = Invader(x, y, 2)
                 else:
-                    invader = Invader(x, y, INVADER1, 10)
+                    invader = Invader(x, y, 3)
 
                 invaders.append(invader)
         return invaders
@@ -254,23 +271,23 @@ class Game:
                     break
             if collide(laser, self.player):
                 self.player.lives -= 1
-                self.invaders_lasers.remove(laser)
-                break
+                if self.player.lives > 0:
+                    self.player.x = WIDTH // 2 - P_WIDTH // 2
+                    sleep(1)
+                    self.invaders_lasers.remove(laser)
+                    break
 
 
 
     def invaders_movement(self):
-        touch_side = False
         for invader in self.invaders:
-            if invader.x >= WIDTH - I_SIZE and not touch_side:
-                touch_side = True
+            if invader.x >= WIDTH - I_SIZE:
                 self.invaders_go_down()
                 self.invaders_dir = -1
-
-            elif invader.x <= 0 and not touch_side:
-                touch_side = True
+            elif invader.x <= 0:
                 self.invaders_go_down()
                 self.invaders_dir = 1
+            invader.move(self.invaders_dir)
 
     def invaders_go_down(self):
         self.row_counter += 1
@@ -323,6 +340,9 @@ def gameloop(win):
     invader_shoot = pygame.USEREVENT
     pygame.time.set_timer(invader_shoot, 750)
 
+    invader_move = pygame.USEREVENT + 1
+    pygame.time.set_timer(invader_move, 300)
+
     while run:
         pygame.time.Clock().tick(FPS)
 
@@ -331,18 +351,24 @@ def gameloop(win):
         game.player_shoot()
         game.player_laser_collision()
 
-        game.invaders_movement()
         game.invader_laser_collision()
         game.mystery_ship_handler()
 
         game.draw(win)
 
-        # if game.row_counter > 11:
-        #     run = False
-
         for event in pygame.event.get():
+            if event.type == invader_move:
+                game.invaders_movement()
             if event.type == invader_shoot:
                 game.invader_shoot()
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
+
+        print (game.row_counter)
+        if game.row_counter > 15 or game.player.lives == 0:
+            main.end_screen('GAME OVER')
+            run = False
+        elif len(game.invaders) == 0:
+            main.end_screen('YOU WON')
+            run = False
