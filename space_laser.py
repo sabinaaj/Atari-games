@@ -1,10 +1,11 @@
 import pygame
 
-WHITE = (255, 255, 255)
+from constants import *
 
 # laser
 L_WIDTH, L_HEIGHT = 5, 15
 L_SPEED = 20
+
 
 class Laser:
     def __init__(self, x, y, up):

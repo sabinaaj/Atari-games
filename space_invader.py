@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-WIDTH, HEIGHT = 1400, 1000
+from constants import *
 
 # invaders
 I_SIZE = 75
@@ -52,19 +52,18 @@ class Invader:
 
     def move(self, direction):
         self.change_image = not self.change_image
-        if direction == -1:
+        if direction == LEFT:
             self.x -= I_SPEED
-        elif direction == 0:
+        elif direction == DOWN:
             self.y += I_SPEED
-        elif direction == 1:
+        elif direction == RIGHT:
             self.x += I_SPEED
 
 
 class MysteryShip:
     def __init__(self, direction):
-        # -1 = left, 1 = right
         self.direction = direction
-        self.x = WIDTH + I_SIZE if direction == -1 else 0 - I_SIZE
+        self.x = WIDTH + I_SIZE if direction == LEFT else 0 - I_SIZE
         self.y = 75
         self.points = 200
         self.image = MYSTERY_SHIP
@@ -74,7 +73,7 @@ class MysteryShip:
         win.blit(self.image, (self.x, self.y))
 
     def move(self):
-        if self.direction == -1:
+        if self.direction == LEFT:
             self.x -= M_SPEED
         else:
             self.x += M_SPEED

@@ -1,17 +1,14 @@
 import pygame
 
+import pacman_main
 import pong
 import space_main
+from constants import *
 
 pygame.init()
 
-WIDTH, HEIGHT = 1400, 1000
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption('Atari games')
-
-FPS = 60
-WHITE = (255, 255, 255)
-DARK_GRAY = (18, 18, 18)
 
 
 # Draws given text on display
@@ -56,6 +53,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pacman_rect.collidepoint(mouse_pos):
                     run = False
+                    pacman_main.gameloop(WIN)
                 if pong_rect.collidepoint(mouse_pos):
                     run = False
                     gamemode_menu()

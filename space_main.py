@@ -4,15 +4,11 @@ from time import sleep
 import pygame
 
 import main
+from constants import *
 from space_invader import I_SIZE, MysteryShip, Invader
 from space_laser import Laser
 from space_player import Player, P_WIDTH
 from space_shield import S_SIZE, S_SHAPE, Shield
-
-WIDTH, HEIGHT = 1400, 1000
-FPS = 60
-WHITE = (255, 255, 255)
-DARK_GRAY = (18, 18, 18)
 
 ROWS, COLUMNS = 5, 11
 
@@ -20,15 +16,13 @@ X_MARGIN = (WIDTH - 11 * (I_SIZE + 10)) // 2
 SPACE_BETWEEN = (WIDTH - 2 * X_MARGIN - 44 * S_SIZE) // 3
 
 
-
 class Game:
     def __init__(self):
         self.player = Player(WIDTH // 2 - P_WIDTH // 2)
         self.player_laser = None
 
-        self.invaders = self.invaders_setup(ROWS, COLUMNS)
-        # direction, -1 = left, 0 = down, 1 = right
-        self.invaders_dir = 1
+        self.invaders = self.invaders_setup()
+        self.invaders_dir = RIGHT
         self.invaders_lasers = []
         self.row_counter = 0
         self.down = False
@@ -68,9 +62,9 @@ class Game:
     # Handles player movement and shooting based on pressed keys
     def player_movement(self, keys):
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.player.move(True)
+            self.player.move(LEFT)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.player.move(False)
+            self.player.move(RIGHT)
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             if self.player_laser is None:
                 self.player_laser = self.player.shoot_laser()
@@ -105,10 +99,10 @@ class Game:
                 self.player_laser = None
 
     # Draws invaders on display in rectangle
-    def invaders_setup(self, rows, cols):
+    def invaders_setup(self):
         invaders = []
-        for row_idx, row in enumerate(range(rows)):
-            for col_idx, col in enumerate(range(cols)):
+        for row_idx, row in enumerate(range(ROWS)):
+            for col_idx, col in enumerate(range(COLUMNS)):
                 # calculate x of every invader, so they are in the middle
                 x = X_MARGIN + col_idx * (I_SIZE + 10)
                 y = 200 + row_idx * (I_SIZE + 5)
@@ -143,16 +137,16 @@ class Game:
         for invader in self.invaders:
             if invader.x >= WIDTH - I_SIZE:
                 self.invaders_go_down()
-                self.invaders_dir = -1
+                self.invaders_dir = LEFT
             elif invader.x <= 0:
                 self.invaders_go_down()
-                self.invaders_dir = 1
+                self.invaders_dir = RIGHT
             invader.move(self.invaders_dir)
 
     def invaders_go_down(self):
         self.row_counter += 1
         for invader in self.invaders:
-            invader.move(0)
+            invader.move(DOWN)
 
     def invader_shoot(self):
         invader = random.choice(self.invaders)
@@ -223,7 +217,6 @@ def gameloop(win):
                 game.invader_shoot()
             if event.type == pygame.QUIT:
                 run = False
-                pygame.quit()
 
         # if game.row_counter > 15 or game.player.lives == 0:
         #     main.end_screen('GAME OVER')

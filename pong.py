@@ -3,16 +3,13 @@ from random import choice
 import pygame
 
 import main
+from constants import *
 
-WIDTH, HEIGHT = 1400, 1000
 P_WIDTH, P_HEIGHT = 40, 250
 P_SPEED = 5
 B_RADIUS = 14
 B_SPEED = 8
 MAX_SCORE = 10
-FPS = 60
-WHITE = (255, 255, 255)
-DARK_GRAY = (18, 18, 18)
 
 
 class Paddle:

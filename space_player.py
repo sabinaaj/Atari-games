@@ -2,9 +2,9 @@ import os
 
 import pygame
 
+from constants import *
 from space_laser import Laser
 
-WIDTH, HEIGHT = 1400, 1000
 P_WIDTH, P_HEIGHT = 100, 60
 P_SPEED = 5
 
@@ -23,12 +23,10 @@ class Player:
     def draw(self, win):
         win.blit(self.image, (self.x, self.y))
 
-    def move(self, left):
-        # player go left
-        if left and self.x >= 0:
+    def move(self, direction):
+        if direction == LEFT and self.x >= 0:
             self.x -= P_SPEED
-        # player go right
-        elif not left and self.x + P_WIDTH <= WIDTH:
+        elif direction == RIGHT and self.x + P_WIDTH <= WIDTH:
             self.x += P_SPEED
 
     def shoot_laser(self):
