@@ -1,7 +1,7 @@
 import pygame
 
 import pong
-import space_invaders
+import space_main
 
 pygame.init()
 
@@ -35,9 +35,9 @@ def main():
 
         mouse_pos = pygame.mouse.get_pos()
 
-        pacman_rect = draw_text(WIN, 'PACMAN', WIDTH / 2, HEIGHT / 5 * 2, 60)
+        pacman_rect = draw_text(WIN, 'MS. PAC-MAN', WIDTH / 2, HEIGHT / 5 * 2, 60)
         if pacman_rect.collidepoint(mouse_pos):
-            draw_text(WIN, '>PACMAN<', WIDTH / 2, HEIGHT / 5 * 2, 60)
+            draw_text(WIN, '>MS. PAC-MAN<', WIDTH / 2, HEIGHT / 5 * 2, 60)
 
         pong_rect = draw_text(WIN, 'PONG', WIDTH / 2, HEIGHT / 5 * 3, 60)
         if pong_rect.collidepoint(mouse_pos):
@@ -61,7 +61,7 @@ def main():
                     gamemode_menu()
                 if space_rect.collidepoint(mouse_pos):
                     run = False
-                    space_invaders.gameloop(WIN)
+                    space_main.gameloop(WIN)
 
 
 # Shows screen of menu, where you can choose how many players are playing
