@@ -1,14 +1,10 @@
 import random
 from time import sleep
 
-import pygame
-
 import main
-from constants import *
-from space_invader import I_SIZE, MysteryShip, Invader
-from space_laser import Laser
-from space_player import Player, P_WIDTH
-from space_shield import S_SIZE, S_SHAPE, Shield
+from space_invader import *
+from space_player import *
+from space_shield import *
 
 ROWS, COLUMNS = 5, 11
 

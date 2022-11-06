@@ -53,7 +53,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pacman_rect.collidepoint(mouse_pos):
                     run = False
-                    pacman_main.gameloop(WIN)
+                    pacman_main.gameloop()
                 if pong_rect.collidepoint(mouse_pos):
                     run = False
                     gamemode_menu()

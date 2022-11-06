@@ -12,34 +12,29 @@ I_SPEED = 10
 M_SIZE = 125
 M_SPEED = 4
 
-INVADER1a = pygame.transform.scale(
-    pygame.image.load(os.path.join('assets/space_invaders', 'invader1a.png')), (I_SIZE, I_SIZE))
-INVADER2a = pygame.transform.scale(
-    pygame.image.load(os.path.join('assets/space_invaders', 'invader2a.png')), (I_SIZE, I_SIZE))
-INVADER3a = pygame.transform.scale(
-    pygame.image.load(os.path.join('assets/space_invaders', 'invader3a.png')), (I_SIZE, I_SIZE))
-INVADER1b = pygame.transform.scale(
-    pygame.image.load(os.path.join('assets/space_invaders', 'invader1b.png')), (I_SIZE, I_SIZE))
-INVADER2b = pygame.transform.scale(
-    pygame.image.load(os.path.join('assets/space_invaders', 'invader2b.png')), (I_SIZE, I_SIZE))
-INVADER3b = pygame.transform.scale(
-    pygame.image.load(os.path.join('assets/space_invaders', 'invader3b.png')), (I_SIZE, I_SIZE))
+INVADER_IMAGES = []
+for image in range(1, 4):
+    INVADER_IMAGES.append(pygame.transform.scale(
+        pygame.image.load(os.path.join('assets/space_invaders', f'invader{image}a.png')), (I_SIZE, I_SIZE)))
+    INVADER_IMAGES.append(pygame.transform.scale(
+        pygame.image.load(os.path.join('assets/space_invaders', f'invader{image}b.png')), (I_SIZE, I_SIZE)))
+
 MYSTERY_SHIP = pygame.transform.scale(
     pygame.image.load(os.path.join('assets/space_invaders', 'mystery_ship.ico')), (M_SIZE, M_SIZE))
 
 
 class Invader:
-    INVADERS = [
-        (INVADER1a, INVADER1b, 30),
-        (INVADER2a, INVADER2b, 20),
-        (INVADER3a, INVADER3b, 10),
+    INVADER_TYPES = [
+        (INVADER_IMAGES[0], INVADER_IMAGES[1], 30),
+        (INVADER_IMAGES[2], INVADER_IMAGES[3], 20),
+        (INVADER_IMAGES[4], INVADER_IMAGES[5], 10),
     ]
 
     def __init__(self, x, y, typ):
         self.x = x
         self.y = y
         self.is_live = True
-        self.image1, self.image2, self.points = self.INVADERS[typ - 1]
+        self.image1, self.image2, self.points = self.INVADER_TYPES[typ - 1]
         self.change_image = False
         self.mask = pygame.mask.from_surface(self.image1)
 
