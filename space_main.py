@@ -97,18 +97,18 @@ class Game:
     # Draws invaders on display in rectangle
     def invaders_setup(self):
         invaders = []
-        for row_idx, row in enumerate(range(ROWS)):
-            for col_idx, col in enumerate(range(COLUMNS)):
+        for row in range(ROWS):
+            for col in range(COLUMNS):
                 # calculate x of every invader, so they are in the middle
-                x = X_MARGIN + col_idx * (I_SIZE + 10)
-                y = 200 + row_idx * (I_SIZE + 5)
+                x = X_MARGIN + col * (I_SIZE + 10)
+                y = 200 + row * (I_SIZE + 5)
 
                 if row == 0:
-                    invader = Invader(x, y, 1)
+                    invader = Invader(x, y, col, 1)
                 elif row == 1 or row == 2:
-                    invader = Invader(x, y, 2)
+                    invader = Invader(x, y, col, 2)
                 else:
-                    invader = Invader(x, y, 3)
+                    invader = Invader(x, y, col, 3)
 
                 invaders.append(invader)
         return invaders
@@ -130,19 +130,19 @@ class Game:
                     break
 
     def invaders_movement(self):
+        down = False
         for invader in self.invaders:
-            if invader.x >= WIDTH - I_SIZE:
-                self.invaders_go_down()
+            if invader.x >= WIDTH - (I_SIZE + 10) * (11 - invader.column):
+                down = True
+                invader.move(DOWN)
                 self.invaders_dir = LEFT
-            elif invader.x <= 0:
-                self.invaders_go_down()
+            elif invader.x <= 0 + (I_SIZE + 10) * invader.column:
+                down = True
+                invader.move(DOWN)
                 self.invaders_dir = RIGHT
             invader.move(self.invaders_dir)
-
-    def invaders_go_down(self):
-        self.row_counter += 1
-        for invader in self.invaders:
-            invader.move(DOWN)
+        if down:
+            self.row_counter += 1
 
     def invader_shoot(self):
         invader = random.choice(self.invaders)
@@ -214,9 +214,9 @@ def gameloop(win):
             if event.type == pygame.QUIT:
                 run = False
 
-        # if game.row_counter > 15 or game.player.lives == 0:
-        #     main.end_screen('GAME OVER')
-        #     run = False
+        if game.row_counter > 15 or game.player.lives == 0:
+            main.end_screen('GAME OVER')
+            run = False
         if len(game.invaders) == 0:
             main.end_screen('YOU WON')
             run = False

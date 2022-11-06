@@ -30,9 +30,10 @@ class Invader:
         (INVADER_IMAGES[4], INVADER_IMAGES[5], 10),
     ]
 
-    def __init__(self, x, y, typ):
+    def __init__(self, x, y, column, typ):
         self.x = x
         self.y = y
+        self.column = column
         self.is_live = True
         self.image1, self.image2, self.points = self.INVADER_TYPES[typ - 1]
         self.change_image = False
