@@ -64,6 +64,9 @@ class Map:
             for col_idx in range(self.columns):
                 self.map_list[row_idx][col_idx].allowed_direction = self.check_allowed_directions(row_idx, col_idx)
 
+
+
+
     def draw(self, win):
         for row_idx in range(self.rows):
             for col_idx in range(self.columns):
@@ -72,16 +75,23 @@ class Map:
     def check_allowed_directions(self, row_idx, col_idx):
         allowed_direction = []
 
+        if (row_idx == 11 or row_idx == 12) and (col_idx == 13 or col_idx == 14):
+            allowed_direction.append(UP)
+
         if self.map_list[row_idx][col_idx].tile_type >= 3:
             return allowed_direction
 
         if valid_tile(row_idx, col_idx - 1):
             if self.map_list[row_idx][col_idx - 1].can_go:
                 allowed_direction.append(LEFT)
+        else:
+            allowed_direction.append(LEFT) # ms. pac-man can go through tunnel
 
         if valid_tile(row_idx, col_idx + 1):
             if self.map_list[row_idx][col_idx + 1].can_go:
                 allowed_direction.append(RIGHT)
+        else:
+            allowed_direction.append(RIGHT)
 
         if valid_tile(row_idx + 1, col_idx):
             if self.map_list[row_idx + 1][col_idx].can_go:
@@ -119,7 +129,7 @@ class Tile:
         (False, WALL4, 270),
         (False, WALL4, 180),
         (False, WALL4, 90),
-        (False, WALL5, 0)
+        (False, WALL5, 0),
     ]
     
     def __init__(self, column, row, tile_type):

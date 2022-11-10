@@ -1,51 +1,29 @@
 from pacman_map import *
+from abc import ABC
 
 E_SPEED = 5
 E_SIZE = 40
 
 
-class Entity:
+class Entity(ABC):
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.tile = None
+        self.next_tile = None
         self.direction = None
 
-    def change_direction(self, direction):
-        if direction in self.tile.allowed_direction:
-            self.direction = direction
-
-    def move(self):
-        if self.direction == LEFT:
-            if LEFT in self.tile.allowed_direction:
-                self.x -= E_SPEED
-            else:
-                if self.x > self.tile.x:
-                    self.x -= E_SPEED
-
-        elif self.direction == RIGHT:
-            if RIGHT in self.tile.allowed_direction:
-                self.x += E_SPEED
-            else:
-                if self.x + E_SIZE < self.tile.x + TILE_SIZE:
-                    self.x += E_SPEED
-
-        elif self.direction == DOWN:
-            if DOWN in self.tile.allowed_direction:
-                self.y += E_SPEED
-            else:
-                if self.y + E_SIZE < self.tile.y + TILE_SIZE:
-                    self.y += E_SPEED
-
-        elif self.direction == UP:
-            if UP in self.tile.allowed_direction:
-                self.y -= E_SPEED
-            else:
-                if self.y > self.tile.y:
-                    self.y -= E_SPEED
 
     def check_position(self, map_list):
         row = ((self.y + E_SIZE // 2) - 50) // TILE_SIZE
         column = (self.x + E_SIZE // 2) // TILE_SIZE
-        self.tile = map_list[row][column]
+        if valid_tile(row, column):
+            self.tile = map_list[row][column]
         #print(f'{self.y + E_SIZE // 2} row: {row}, col:{column}, type: {self.tile.tile_type}, {self.tile.allowed_direction}')
+
+    def go_through_tunnel(self):
+        if self.x + E_SIZE <= 0:
+            self.x = PACMAN_WIN_WIDTH
+        elif self.x >= PACMAN_WIN_WIDTH:
+            self.x = 0 - E_SIZE
+

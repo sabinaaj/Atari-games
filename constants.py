@@ -1,6 +1,7 @@
 
 #win
 WIDTH, HEIGHT = 1400, 1000
+PACMAN_WIN_WIDTH = 840
 FPS = 60
 
 #colors
