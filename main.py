@@ -20,7 +20,6 @@ def draw_text(win, text, x, y, size):
     win.blit(text_on_display, text_rect)
     return text_rect
 
-
 # Shows first screen of game menu, where you can choose game
 def main():
     run = True
@@ -104,7 +103,7 @@ def gamemode_menu():
 
 
 # Shows screen after game ends
-def end_screen(text):
+def end_screen(text, score_text=None):
     run = True
 
     while run:
@@ -113,11 +112,17 @@ def end_screen(text):
 
         mouse_pos = pygame.mouse.get_pos()
 
-        draw_text(WIN, text, WIDTH / 2, HEIGHT / 5 * 2, 60)
-
-        back_rect = draw_text(WIN, 'BACK TO MENU', WIDTH / 2, HEIGHT / 5 * 3, 60)
-        if back_rect.collidepoint(mouse_pos):
-            draw_text(WIN, '>BACK TO MENU<', WIDTH / 2, HEIGHT / 5 * 3, 60)
+        if score_text is not None:
+            draw_text(WIN, text, WIDTH / 2, HEIGHT / 6 * 2, 70)
+            draw_text(WIN, score_text, WIDTH / 2, HEIGHT / 6 * 3, 50)
+            back_rect = draw_text(WIN, 'BACK TO MENU', WIDTH / 2, HEIGHT / 6 * 4, 60)
+            if back_rect.collidepoint(mouse_pos):
+                draw_text(WIN, '>BACK TO MENU<', WIDTH / 2, HEIGHT / 6 * 4, 60)
+        else:
+            draw_text(WIN, text, WIDTH / 2, HEIGHT / 5 * 2, 70)
+            back_rect = draw_text(WIN, 'BACK TO MENU', WIDTH / 2, HEIGHT / 5 * 3, 60)
+            if back_rect.collidepoint(mouse_pos):
+                draw_text(WIN, '>BACK TO MENU<', WIDTH / 2, HEIGHT / 5 * 3, 60)
 
         pygame.display.update()
 

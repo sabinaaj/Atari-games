@@ -32,8 +32,10 @@ class Game:
     def draw(self, win):
         win.fill(DARK_GRAY)
 
-        main.draw_text(win, f'SCORE: {self.score}', 150, 40, 40)
-        main.draw_text(win, f'LIVES: {self.player.lives}', WIDTH - 150, 40, 40)
+        win.blit(BACK, (25, 27))
+
+        main.draw_text(win, f'SCORE: {self.score}', x=200, y=40, size=40)
+        main.draw_text(win, f'LIVES: {self.player.lives}', x=WIDTH - 150, y=40, size=40)
 
         for invader_laser in self.invaders_lasers:
             invader_laser.move()
@@ -196,6 +198,9 @@ def gameloop(win):
     while run:
         pygame.time.Clock().tick(FPS)
 
+        mouse_pos = pygame.mouse.get_pos()
+        back_rec = pygame.Rect(25, 27, BACK_WIDTH, BACK_HEIGHT)
+
         keys = pygame.key.get_pressed()
         game.player_movement(keys)
         game.player_shoot()
@@ -211,12 +216,16 @@ def gameloop(win):
                 game.invaders_movement()
             if event.type == invader_shoot:
                 game.invader_shoot()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if back_rec.collidepoint(mouse_pos):
+                    run = False
+                    main.main()
             if event.type == pygame.QUIT:
                 run = False
 
         if game.row_counter > 15 or game.player.lives == 0:
-            main.end_screen('GAME OVER')
+            main.end_screen('GAME OVER', f'SCORE: {game.score}')
             run = False
         if len(game.invaders) == 0:
-            main.end_screen('YOU WON')
+            main.end_screen('YOU WON', f'SCORE: {game.score}')
             run = False

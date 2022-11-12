@@ -1,8 +1,12 @@
+from time import sleep
+
 from pacman_entity import *
 
 
 class Player(Entity):
     def __init__(self, x, y):
+        self.lives = 3
+        self.score = 0
         self.images = []
         for image in range(1, 5):
             self.images.append(pygame.transform.scale(
@@ -23,48 +27,53 @@ class Player(Entity):
     def move(self):
         if self.direction == LEFT:
             if LEFT in self.tile.allowed_direction:
-                self.x -= E_SPEED
+                self.x -= self.speed
             else:
                 if self.x > self.tile.x:
-                    self.x -= E_SPEED
+                    self.x -= self.speed
 
         elif self.direction == RIGHT:
             if RIGHT in self.tile.allowed_direction:
-                self.x += E_SPEED
+                self.x += self.speed
             else:
                 if self.x + E_SIZE < self.tile.x + TILE_SIZE:
-                    self.x += E_SPEED
+                    self.x += self.speed
 
         elif self.direction == DOWN:
             if DOWN in self.tile.allowed_direction:
-                self.y += E_SPEED
+                self.y += self.speed
             else:
                 if self.y + E_SIZE < self.tile.y + TILE_SIZE:
-                    self.y += E_SPEED
+                    self.y += self.speed
 
         elif self.direction == UP:
             if UP in self.tile.allowed_direction:
-                self.y -= E_SPEED
+                self.y -= self.speed
             else:
                 if self.y > self.tile.y:
-                    self.y -= E_SPEED
+                    self.y -= self.speed
 
     def change_direction(self, direction):
         if direction in self.tile.allowed_direction:
-            if (direction == RIGHT or direction == LEFT) and self.x <= self.tile.x + TILE_SIZE // 2 <= self.x + E_SIZE:
-                self.direction = direction
-            elif (direction == DOWN or direction == UP) and self.y <= self.tile.y + TILE_SIZE // 2 <= self.y + E_SIZE:
-                self.direction = direction
+            self.direction = direction
 
-    def eat_pellet(self):
-        if self.tile.tile_type == 1:
+    def eat(self, tile_type, score):
+        if self.tile.tile_type == tile_type:
             if self.x <= self.tile.x + TILE_SIZE // 2 <= self.x + E_SIZE:
+                self.score += score
                 self.tile.tile_type = 0
 
-    def eat_power_pellet(self):
-        if self.tile.tile_type == 2:
-            if self.x <= self.tile.x + TILE_SIZE // 2 <= self.x + E_SIZE:
-                self.tile.tile_type = 0
                 return True
             else:
                 return False
+
+    def eat_pellet(self):
+        return self.eat(1, 10)
+
+    def eat_power_pellet(self):
+        return self.eat(2, 50)
+
+    def lost_live(self):
+        self.lives -= 1
+        sleep(1)
+

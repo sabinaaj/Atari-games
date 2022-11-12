@@ -1,7 +1,5 @@
 from random import choice
 
-import pygame
-
 import main
 from constants import *
 
@@ -77,9 +75,14 @@ class Game:
 
     def draw(self, win):
         win.fill(DARK_GRAY)
+
         self.r_paddle.draw(win)
         self.l_paddle.draw(win)
+
         self.ball.draw(win)
+
+        win.blit(BACK, (20, 20))
+
         main.draw_text(win, str(self.l_score), WIDTH // 2 - 75, 50, 100)
         main.draw_text(win, str(self.r_score), WIDTH // 2 + 75, 50, 100)
 
@@ -157,6 +160,10 @@ def gameloop(win, multiplayer):
 
     while run:
         pygame.time.Clock().tick(FPS)
+
+        mouse_pos = pygame.mouse.get_pos()
+        back_rec = pygame.Rect(20, 20, BACK_WIDTH, BACK_HEIGHT)
+
         game.draw(win)
 
         keys = pygame.key.get_pressed()
@@ -169,3 +176,7 @@ def gameloop(win, multiplayer):
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if back_rec.collidepoint(mouse_pos):
+                    run = False
+                    main.main()

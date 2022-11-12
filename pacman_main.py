@@ -1,9 +1,6 @@
-from time import *
-
-import pygame
-
-from pacman_player import *
+import main
 from pacman_ghosts import *
+from pacman_player import *
 
 
 class Game:
@@ -29,9 +26,13 @@ class Game:
         self.frightened = False
         self.chase = False
 
-
     def draw(self, win):
         win.fill(DARK_GRAY)
+
+        win.blit(BACK, (25, 10))
+
+        main.draw_text(win, f'SCORE: {self.player.score}', x=200, y=25, size=35)
+        main.draw_text(win, f'LIVES: {self.player.lives}', x=PACMAN_WIN_WIDTH - 150, y=25, size=35)
 
         self.map.draw(win)
         self.player.draw(win, self.counter // 5)
@@ -58,30 +59,71 @@ class Game:
 
     def player_handler(self, frightened_mode):
         self.player.check_position(self.map.map_list)
-        self.player.eat_pellet()
+
+        if self.player.eat_pellet():
+            self.map.pellets -= 1
+
         if self.player.eat_power_pellet():
+            self.map.pellets -= 1
             self.frightened = True
             pygame.time.set_timer(frightened_mode, 5000)
+
             for ghost in self.ghosts:
                 ghost.turn_around(self.map.map_list)
+
         self.player.go_through_tunnel()
         self.player.move()
 
     def ghost_handler(self):
         for ghost in self.ghosts:
-
-            if ghost.in_box:
-                if ghost.tile == self.map.map_list[10][13]:
-                    ghost.in_box = False
-            else:
-                if self.chase:
-                    ghost.chase(self.player.x, self.player.y)
+            if not ghost.eaten:
+                if ghost.in_box:
+                    if ghost.tile == self.map.map_list[10][13]:
+                        ghost.in_box = False
                 else:
-                    ghost.scatter()
+                    if self.chase:
+                        if ghost != self.inky:
+                            ghost.chase(self.player.x, self.player.y, self.player.direction)
+                        else:
+                            ghost.chase(self.player.x, self.player.y, self.player.direction, self.blinky.x, self.blinky.y)
+                    else:
+                        ghost.scatter()
+            else:
+                ghost.get_in_box(self.map.map_list)
 
             ghost.go_through_tunnel()
             ghost.move(self.map.map_list, self.frightened)
 
+    def player_ghost_collision(self):
+        for ghost in self.ghosts:
+            if self.player.x < ghost.x + E_SIZE and \
+                    self.player.x + E_SIZE > ghost.x and \
+                    self.player.y < ghost.y + E_SIZE and \
+                    self.player.y + E_SIZE > ghost.y:
+
+                if self.frightened:
+                    ghost.eaten = True
+                    self.player.score += 400
+                else:
+                    if not ghost.eaten:
+                        self.player.lost_live()
+                        self.reset()
+
+    def reset(self):
+        self.player.x, self.player.y = 13 * TILE_SIZE + E_SIZE // 2, 22 * TILE_SIZE + 45
+        self.player.direction = None
+        self.blinky.x, self.blinky.y = 11 * TILE_SIZE + TILE_SIZE // 2, 14 * TILE_SIZE + TILE_SIZE // 2
+        self.pinky.x, self.pinky.y = 12 * TILE_SIZE + TILE_SIZE // 2, 14 * TILE_SIZE + TILE_SIZE // 2
+        self.inky.x, self.inky.y = 14 * TILE_SIZE + TILE_SIZE // 2, 14 * TILE_SIZE + TILE_SIZE // 2
+        self.sue.x, self.sue.y = 15 * TILE_SIZE + TILE_SIZE // 2, 14 * TILE_SIZE + TILE_SIZE // 2
+        for ghost in self.ghosts:
+            ghost.in_box = True
+            ghost.target = (13 * TILE_SIZE, 12 * TILE_SIZE)
+            ghost.check_position(self.map.map_list)
+            ghost.change_direction()
+            ghost.get_next_tile(self.map.map_list)
+
+        self.player.check_position(self.map.map_list)
 
 
 def gameloop():
@@ -98,11 +140,15 @@ def gameloop():
     while run:
         pygame.time.Clock().tick(FPS)
 
+        mouse_pos = pygame.mouse.get_pos()
+        back_rec = pygame.Rect(25, 10, BACK_WIDTH, BACK_HEIGHT)
+
         keys = pygame.key.get_pressed()
         game.player_movement(keys)
         game.player_handler(frightened_mode)
 
         game.ghost_handler()
+        game.player_ghost_collision()
 
         game.draw(win)
 
@@ -112,5 +158,20 @@ def gameloop():
                 pygame.time.set_timer(change_chase, 20000 if game.chase else 5000)
             if event.type == frightened_mode:
                 game.frightened = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if back_rec.collidepoint(mouse_pos):
+                    win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                    run = False
+                    main.main()
             if event.type == pygame.QUIT:
                 run = False
+
+        if game.player.lives == 0:
+            win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+            main.end_screen('GAME OVER', f'SCORE: {game.player.score}')
+            run = False
+        if game.map.pellets == 0:
+            win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+            main.end_screen('YOU WON', f'SCORE: {game.player.score}')
+            run = False
+
