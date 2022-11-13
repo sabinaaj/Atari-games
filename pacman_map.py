@@ -1,9 +1,6 @@
-import os
-
-import pygame
-
 from constants import *
 
+# 2D list of map tiles types
 MAP = [
     [12, 6, 6, 6, 6, 6, 6, 13, 12, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 13, 12, 6, 6, 6, 6, 6, 6, 13],
     [5, 1, 1, 1, 1, 1, 1, 3, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 1, 1, 1, 1, 1, 1, 3],
@@ -59,6 +56,7 @@ class Map:
         self.map_list = []
         self.pellets = 0
 
+    # Makes list of all tiles in map
     def get_map(self):
         self.map_list = [[Tile(col_idx, row_idx, MAP[row_idx][col_idx])
                           for col_idx in range(COLS)] for row_idx in range(ROWS)]
@@ -67,20 +65,24 @@ class Map:
             for col_idx in range(COLS):
                 self.map_list[row_idx][col_idx].allowed_direction = self.check_allowed_directions(row_idx, col_idx)
 
+    # Draws all tiles of the map
     def draw(self, win):
         for row_idx in range(ROWS):
             for col_idx in range(COLS):
                 self.map_list[row_idx][col_idx].draw(win)
 
+    # Makes list of directions where entity can go from that tile
     def check_allowed_directions(self, row_idx, col_idx):
         allowed_direction = []
 
+        # ghost can go out of their box
         if (row_idx == 11 or row_idx == 12) and (col_idx == 13 or col_idx == 14):
             allowed_direction.append(UP)
 
         if self.map_list[row_idx][col_idx].tile_type >= 3:
             return allowed_direction
 
+        # counts pellets in map
         if 1 <= self.map_list[row_idx][col_idx].tile_type <= 2:
             self.pellets += 1
 
@@ -88,7 +90,7 @@ class Map:
             if self.map_list[row_idx][col_idx - 1].can_go:
                 allowed_direction.append(LEFT)
         else:
-            allowed_direction.append(LEFT)  # ms. pac-man can go through tunnel
+            allowed_direction.append(LEFT)  # entity can go through tunnel
 
         if valid_tile(row_idx, col_idx + 1):
             if self.map_list[row_idx][col_idx + 1].can_go:
@@ -107,6 +109,7 @@ class Map:
         return allowed_direction
 
 
+# Checks if tile is in map
 def valid_tile(row, col):
     if 0 <= col <= 27 and 0 <= row <= 29:
         return True
@@ -115,6 +118,7 @@ def valid_tile(row, col):
 
 
 class Tile:
+    # (if entity can step on, tile image, rotation of tile image)
     TILE_TYPES = [
         (True, None, 0),
         (True, None, 0),
@@ -144,6 +148,7 @@ class Tile:
         self.allowed_direction = []
         self.can_go, self.image, self.rotation = self.TILE_TYPES[tile_type]
 
+    # Draws tile image or makes circle for pellets
     def draw(self, win):
         if self.tile_type == 1 or self.tile_type == 2:
             pygame.draw.circle(win, BLUE, (self.x + TILE_SIZE // 2, self.y + TILE_SIZE // 2), 5 * self.tile_type)

@@ -1,5 +1,3 @@
-from time import sleep
-
 from pacman_entity import *
 
 
@@ -14,6 +12,7 @@ class Player(Entity):
 
         super().__init__(x, y)
 
+    # Draws pacman image based on direction and animation counter
     def draw(self, win, counter):
         if self.direction == LEFT or self.direction is None:
             win.blit(self.images[counter], (self.x, self.y))
@@ -25,44 +24,41 @@ class Player(Entity):
             win.blit(pygame.transform.rotate(self.images[counter], 270), (self.x, self.y))
 
     def move(self):
-        if self.direction == LEFT:
-            if LEFT in self.tile.allowed_direction:
-                self.x -= self.speed
+        # up and down
+        if DIRECTIONS[self.direction][0] == 0:
+            if self.direction in self.tile.allowed_direction:
+                self.y += self.speed * DIRECTIONS[self.direction][1]
             else:
-                if self.x > self.tile.x:
-                    self.x -= self.speed
+                if self.direction == DOWN:
+                    if self.y + E_SIZE < self.tile.y + TILE_SIZE:
+                        self.y += self.speed
+                else:
+                    if self.y > self.tile.y:
+                        self.y -= self.speed
 
-        elif self.direction == RIGHT:
-            if RIGHT in self.tile.allowed_direction:
-                self.x += self.speed
+        # left and right
+        else:
+            if self.direction in self.tile.allowed_direction:
+                self.x += self.speed * DIRECTIONS[self.direction][0]
             else:
-                if self.x + E_SIZE < self.tile.x + TILE_SIZE:
-                    self.x += self.speed
+                if self.direction == LEFT:
+                    if self.x > self.tile.x:
+                        self.x -= self.speed
+                else:
+                    if self.x + E_SIZE < self.tile.x + TILE_SIZE:
+                        self.x += self.speed
 
-        elif self.direction == DOWN:
-            if DOWN in self.tile.allowed_direction:
-                self.y += self.speed
-            else:
-                if self.y + E_SIZE < self.tile.y + TILE_SIZE:
-                    self.y += self.speed
-
-        elif self.direction == UP:
-            if UP in self.tile.allowed_direction:
-                self.y -= self.speed
-            else:
-                if self.y > self.tile.y:
-                    self.y -= self.speed
-
+    # Changes player direction
     def change_direction(self, direction):
         if direction in self.tile.allowed_direction:
             self.direction = direction
 
+    # Checks if player can eat given type of pellet
     def eat(self, tile_type, score):
         if self.tile.tile_type == tile_type:
             if self.x <= self.tile.x + TILE_SIZE // 2 <= self.x + E_SIZE:
                 self.score += score
                 self.tile.tile_type = 0
-
                 return True
             else:
                 return False
@@ -72,8 +68,3 @@ class Player(Entity):
 
     def eat_power_pellet(self):
         return self.eat(2, 50)
-
-    def lost_live(self):
-        self.lives -= 1
-        sleep(1)
-
