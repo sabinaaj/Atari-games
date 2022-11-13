@@ -177,11 +177,13 @@ def gameloop():
 
             if event.type == frightened_mode:
                 if game.frightened == 1:
+                    pygame.time.set_timer(frightened_mode, 0)
                     pygame.time.set_timer(end_of_frightened_mode, 1000)
                     game.frightened = 2
 
             if event.type == end_of_frightened_mode:
                 if game.frightened == 2:
+                    pygame.time.set_timer(end_of_frightened_mode, 0)
                     game.frightened = 0
 
             if event.type == pygame.MOUSEBUTTONDOWN:
