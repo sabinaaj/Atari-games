@@ -1,7 +1,3 @@
-import os
-
-import pygame
-
 from constants import *
 
 # invaders
@@ -34,20 +30,21 @@ class Invader:
         self.x = x
         self.y = y
         self.column = column
-        self.is_live = True
         self.image1, self.image2, self.points = self.INVADER_TYPES[typ - 1]
         self.change_image = False
         self.mask = pygame.mask.from_surface(self.image1)
 
+    # Draws invader images
     def draw(self, win):
-
         if self.change_image:
             win.blit(self.image1, (self.x, self.y))
         else:
             win.blit(self.image2, (self.x, self.y))
 
+    # Moves invader left, right or down and toggle change_image
     def move(self, direction):
         self.change_image = not self.change_image
+
         if direction == LEFT:
             self.x -= I_SPEED
         elif direction == DOWN:

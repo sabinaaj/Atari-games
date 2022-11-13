@@ -8,27 +8,34 @@ from space_shield import *
 
 ROWS, COLUMNS = 5, 11
 
+# margin between edge of the screen and invaders
 X_MARGIN = (WIDTH - 11 * (I_SIZE + 10)) // 2
+# space between two shields
 SPACE_BETWEEN = (WIDTH - 2 * X_MARGIN - 44 * S_SIZE) // 3
 
 
 class Game:
     def __init__(self):
+        # player
         self.player = Player(WIDTH // 2 - P_WIDTH // 2)
         self.player_laser = None
+        self.score = 0
 
+        # invaders
         self.invaders = self.invaders_setup()
         self.invaders_dir = RIGHT
         self.invaders_lasers = []
         self.row_counter = 0
         self.down = False
 
+        # mystery ship
         self.mystery_ship = None
         self.mystery_ship_spawn_time = random.randint(500, 1000)
 
+        # shields
         self.shields = self.shield_setup()
-        self.score = 0
 
+    # Updates screen every frame
     def draw(self, win):
         win.fill(DARK_GRAY)
 
@@ -67,26 +74,31 @@ class Game:
             if self.player_laser is None:
                 self.player_laser = self.player.shoot_laser()
 
+    # Handles player laser movement
     def player_shoot(self):
         if self.player_laser is not None:
             self.player_laser.move()
             if self.player_laser.y < 0:
                 self.player_laser = None
 
+    # Checks collision between player laser and shields, invaders and mystery ship
     def player_laser_collision(self):
         hit = False
+
         if self.player_laser is not None:
             for shield in self.shields:
                 if collide(self.player_laser, shield):
                     self.shields.remove(shield)
                     hit = True
                     break
+
             for invader in self.invaders:
                 if collide(self.player_laser, invader):
                     self.score += invader.points
                     self.invaders.remove(invader)
                     hit = True
                     break
+
             if self.mystery_ship is not None:
                 if collide(self.player_laser, self.mystery_ship):
                     self.score += self.mystery_ship.points
@@ -113,8 +125,10 @@ class Game:
                     invader = Invader(x, y, col, 3)
 
                 invaders.append(invader)
+
         return invaders
 
+    # Checks collision between invader's lasers and shields and player
     def invader_laser_collision(self):
         for laser in self.invaders_lasers:
             for shield in self.shields:
@@ -131,8 +145,10 @@ class Game:
                     self.invaders_lasers.remove(laser)
                     break
 
+    # Changes invaders direction based on their position
     def invaders_movement(self):
         down = False
+
         for invader in self.invaders:
             if invader.x >= WIDTH - (I_SIZE + 10) * (11 - invader.column):
                 down = True
@@ -142,17 +158,22 @@ class Game:
                 down = True
                 invader.move(DOWN)
                 self.invaders_dir = RIGHT
+
             invader.move(self.invaders_dir)
+
         if down:
             self.row_counter += 1
 
+    # Makes player laser
     def invader_shoot(self):
         invader = random.choice(self.invaders)
         laser = Laser(invader.x + I_SIZE // 2, invader.y, False)
         self.invaders_lasers.append(laser)
 
+    # Handles mystery ship
     def mystery_ship_handler(self):
         self.mystery_ship_spawn_time -= 1
+
         if self.mystery_ship_spawn_time <= 0:
             self.mystery_ship = MysteryShip(random.choice([-1, 1]))
             self.mystery_ship_spawn_time = random.randint(500, 1000)
@@ -164,9 +185,11 @@ class Game:
             elif self.mystery_ship.direction == 1 and self.mystery_ship.x > WIDTH:
                 self.mystery_ship = None
 
+    # Calculate shield position and initialize it
     def shield_setup(self):
         shields = []
         y = HEIGHT - 250
+
         for shield in range(4):
             x = X_MARGIN + (11 * S_SIZE + SPACE_BETWEEN) * shield
 
@@ -178,6 +201,7 @@ class Game:
         return shields
 
 
+# Checks if mask of two object collides
 def collide(obj1, obj2):
     offset_x = obj2.x - obj1.x
     offset_y = obj2.y - obj1.y
@@ -198,14 +222,17 @@ def gameloop(win):
     while run:
         pygame.time.Clock().tick(FPS)
 
+        # back arrow
         mouse_pos = pygame.mouse.get_pos()
         back_rec = pygame.Rect(25, 27, BACK_WIDTH, BACK_HEIGHT)
 
+        # player
         keys = pygame.key.get_pressed()
         game.player_movement(keys)
         game.player_shoot()
         game.player_laser_collision()
 
+        # invaders
         game.invader_laser_collision()
         game.mystery_ship_handler()
 
@@ -223,6 +250,7 @@ def gameloop(win):
             if event.type == pygame.QUIT:
                 run = False
 
+        # checks end of game
         if game.row_counter > 15 or game.player.lives == 0:
             main.end_screen('GAME OVER', f'SCORE: {game.score}')
             run = False

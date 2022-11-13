@@ -14,6 +14,7 @@ S_SHAPE = [
     'xx       xx']
 
 
+# Draws and makes mask of shield
 class Shield:
     def __init__(self, x, y):
         self.x = x

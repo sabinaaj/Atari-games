@@ -1,5 +1,3 @@
-import pygame
-
 from constants import *
 
 # laser
@@ -11,7 +9,7 @@ class Laser:
     def __init__(self, x, y, up):
         self.x = x
         self.y = y
-        # if it's player's laser go up is true and if it's invader's laser go down
+        # player laser go up and invader laser go down
         self.up = up
         self.mask = pygame.mask.Mask((L_WIDTH, L_HEIGHT), True)
 
